@@ -51,5 +51,7 @@
     <string name="save_label">Speichern</string>
     <string name="today_label">Heute</string>
     <string name="location">Standort</string>
+    <string name="custom_server_label">Server (optional)</string>
+    <string name="login_btn_label">> Anmelden</string>
 
 </resources>

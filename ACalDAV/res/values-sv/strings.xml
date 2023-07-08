@@ -47,4 +47,6 @@
     <string name="save_label">Spara</string>
     <string name="today_label">Idag</string>
     <string name="location">Plats</string>
+    <string name="custom_server_label">Server (valfritt)</string>
+    <string name="login_btn_label">> Inloggning</string>
 </resources>

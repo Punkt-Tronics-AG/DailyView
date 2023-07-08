@@ -60,6 +60,8 @@
 
     <string name="location">Location</string>
     <string name="no_title">(No title)</string>
+    <string name="custom_server_label">Server (optional)</string>
+    <string name="login_btn_label">> Login</string>
 
 
 </resources>

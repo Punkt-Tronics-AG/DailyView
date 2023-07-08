@@ -48,4 +48,6 @@
     <string name="save_label">Salva</string>
     <string name="today_label">Oggi</string>
     <string name="location">Posizione</string>
+    <string name="custom_server_label">Server (opzionale)</string>
+    <string name="login_btn_label">> Accedi</string>
 </resources>

@@ -47,4 +47,6 @@
     <string name="save_label">Guardar</string>
     <string name="today_label">Hoy</string>
     <string name="location">Ubicación</string>
+    <string name="custom_server_label">Servidor (opcional)</string>
+    <string name="login_btn_label">> Inicio de sesión</string>
 </resources>

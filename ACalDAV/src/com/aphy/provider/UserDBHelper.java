@@ -94,7 +94,8 @@ public class UserDBHelper extends SQLiteOpenHelper {
 
         String account_sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_ACCOUNT + "("
                 + "AccountName VARCHAR,"
-                + "Password VARCHAR"
+                + "Password VARCHAR,"
+                + "ServerUrl VARCHAR"
                 + ");";
         db.execSQL(account_sql);
     }
@@ -231,6 +232,7 @@ public class UserDBHelper extends SQLiteOpenHelper {
         ContentValues cv = new ContentValues();
         cv.put(AccountName.AccountName, accountName.getAccountName());
         cv.put(AccountName.Password, accountName.getPassword());
+        cv.put(AccountName.ServerURL, accountName.getServerURL());
         return cv;
     }
 
@@ -245,6 +247,7 @@ public class UserDBHelper extends SQLiteOpenHelper {
 
             accountName.setAccountName(cursor.getString(cursor.getColumnIndex(AccountName.AccountName)));
             accountName.setPassword(cursor.getString(cursor.getColumnIndex(AccountName.Password)));
+            accountName.setServerURL(cursor.getString(cursor.getColumnIndex(AccountName.ServerURL)));
             infoList.add(accountName);
         }
         cursor.close();

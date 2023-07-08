@@ -47,4 +47,6 @@
     <string name="save_label">Gem</string>
     <string name="today_label">I dag</string>
     <string name="location">Placering</string>
+    <string name="custom_server_label">Server (valgfri)</string>
+    <string name="login_btn_label">> Login</string>
 </resources>

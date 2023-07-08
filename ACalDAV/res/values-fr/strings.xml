@@ -47,4 +47,6 @@
     <string name="save_label">Sauvegarder</string>
     <string name="today_label">Aujourd\'hui</string>
     <string name="location">Localisation</string>
+    <string name="custom_server_label">Serveur (optionnel)</string>
+    <string name="login_btn_label">> Connexion</string>
 </resources>

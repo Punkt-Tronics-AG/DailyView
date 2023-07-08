@@ -47,4 +47,6 @@
     <string name="save_label">Tallenna</string>
     <string name="today_label">Tänään</string>
     <string name="location">Sijainti</string>
+    <string name="custom_server_label">Palvelin (valinnainen)</string>
+    <string name="login_btn_label">> Kirjautuminen</string>
 </resources>

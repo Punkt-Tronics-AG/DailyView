@@ -47,4 +47,6 @@
     <string name="save_label">保存</string>
     <string name="today_label">今日</string>
     <string name="location">場所</string>
+    <string name="custom_server_label">サーバー (オプション)</string>
+    <string name="login_btn_label">> ログイン</string>
 </resources>

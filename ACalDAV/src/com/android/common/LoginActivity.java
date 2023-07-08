@@ -55,13 +55,17 @@ public class LoginActivity extends AppCompatActivity {
         mPosition = getIntent().getIntExtra("position", 0);
         mName = getIntent().getStringExtra("name");
         mValue = getIntent().getStringExtra("value");
+
         if (mValue == null) {
             if ((mPosition == 0 && !getString(R.string.email_label).equals(mName)) ||
                     (mPosition == 1 && !getString(R.string.password_label).equals(mName))) {
                 mValue = mName;
             } else if (mPosition == 1 && !getString(R.string.password_label).equals(mName)) {
                 mValue = mName;
+            } else if (mPosition == 2 && !getString(R.string.custom_server_label).equals(mName)) {
+                mValue = mName;
             }
+
         }
 
         mRcContent = findViewById(R.id.rv_content_login);
@@ -224,12 +228,16 @@ public class LoginActivity extends AppCompatActivity {
                 requestFocus(mSaveText);
             } else if (position == 1) {
                 mLoginText = holder.mView.findViewById(R.id.login_text);
-                mLoginText.setText(mPosition == 0 ? getString(R.string.email_label) : getString(R.string.password_label));
                 mInputText = holder.mView.findViewById(R.id.login_edit);
                 if (mPosition == 0) {
+                    mLoginText.setText(getString(R.string.email_label));
                     mInputText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                 } else if (mPosition == 1) {
+                    mLoginText.setText(getString(R.string.password_label));
                     mInputText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                } else if (mPosition == 2) {
+                    mLoginText.setText(getString(R.string.custom_server_label));
+                    mInputText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
                 }
                 mInputText.setText(mValue);
                 if (mValue != null && mValue.length() > 0) {
@@ -295,7 +303,17 @@ public class LoginActivity extends AppCompatActivity {
         public void itemClick(View view, int position) {
             if (position == 0) {
                 Intent intent = new Intent();
-                intent.putExtra("Name", mPosition == 0 ? getString(R.string.email_label) : getString(R.string.password_label));
+
+                String name = "";
+                if (mPosition == 0) {
+                    name = getString(R.string.email_label);
+                } else if (mPosition == 1) {
+                    name = getString(R.string.password_label);
+                } else if (mPosition == 2) {
+                    name = getString(R.string.custom_server_label);
+                }
+
+                intent.putExtra("Name", name);
                 intent.putExtra("Save", mInputText.getText().toString());
                 setResult(0, intent);
                 finish();

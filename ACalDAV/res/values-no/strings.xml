@@ -47,4 +47,6 @@
     <string name="save_label">Lagre</string>
     <string name="today_label">I dag</string>
     <string name="location">Sted</string>
+    <string name="custom_server_label">Server (valgfritt)</string>
+    <string name="login_btn_label">> Logg inn</string>
 </resources>

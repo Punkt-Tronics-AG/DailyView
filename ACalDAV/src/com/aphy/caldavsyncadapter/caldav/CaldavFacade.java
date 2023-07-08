@@ -1,22 +1,21 @@
 /**
  * Copyright (c) 2012-2013, Gerald Garcia, David Wiesner, Timo Berger
- *
+ * <p>
  * This file is part of Andoid Caldav Sync Adapter Free.
- *
- * Andoid Caldav Sync Adapter Free is free software: you can redistribute 
- * it and/or modify it under the terms of the GNU General Public License 
- * as published by the Free Software Foundation, either version 3 of the 
+ * <p>
+ * Andoid Caldav Sync Adapter Free is free software: you can redistribute
+ * it and/or modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the
  * License, or at your option any later version.
- *
- * Andoid Caldav Sync Adapter Free is distributed in the hope that 
- * it will be useful, but WITHOUT ANY WARRANTY; without even the implied 
+ * <p>
+ * Andoid Caldav Sync Adapter Free is distributed in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
- * along with Andoid Caldav Sync Adapter Free.  
+ * along with Andoid Caldav Sync Adapter Free.
  * If not, see <http://www.gnu.org/licenses/>.
- *
  */
 
 package com.aphy.caldavsyncadapter.caldav;
@@ -26,6 +25,7 @@ import android.content.ContentProviderClient;
 import android.content.Context;
 import android.util.Log;
 
+import com.aphy.caldavsyncadapter.Constants;
 import com.aphy.caldavsyncadapter.caldav.discovery.DefaultDiscoveryStrategy;
 import com.aphy.caldavsyncadapter.caldav.discovery.DiscoveryStrategy;
 import com.aphy.caldavsyncadapter.caldav.discovery.GoogleDiscoveryStrategy;
@@ -168,9 +168,10 @@ public class CaldavFacade {
             } else {
                 //AuthState and AuthScope have to be saved separate because of the AuthScope within AuthState gets lost, so we save it in a separate var.
                 mLastAuthState = authState;
-                if (BuildConfig.DEBUG) Log.d(TAG, "LastAuthState: new with user " + mLastAuthState.getCredentials()
-                        .getUserPrincipal()
-                        .getName());
+                if (BuildConfig.DEBUG)
+                    Log.d(TAG, "LastAuthState: new with user " + mLastAuthState.getCredentials()
+                            .getUserPrincipal()
+                            .getName());
                 if (authState.getAuthScope() != null) {
                     mLastAuthScope = authState.getAuthScope();
                     Log.d(TAG, "LastAuthScope: new");
@@ -197,17 +198,19 @@ public class CaldavFacade {
 
     private ContentProviderClient mProvider;
 
-	private static DiscoveryStrategy discoveryStrategy;
-    
+    private static DiscoveryStrategy discoveryStrategy;
+
     private static List<DiscoveryStrategy> discoveryStrategies = Arrays.asList(
-    		new DiscoveryStrategy[] {new GoogleDiscoveryStrategy()});
+            new DiscoveryStrategy[]{new GoogleDiscoveryStrategy()});
     private static DiscoveryStrategy defaultDiscoveryStrategy = new DefaultDiscoveryStrategy();
 
     public CaldavFacade(String mUser, String mPassword, String mURL, String trustAll)
             throws MalformedURLException {
-        if ("https://dav.aphy.app".equals(mURL)) {
-            mURL = "https://dav.aphy.app/dav/calendars/user/" + mUser + "/Default/";
+
+        if (Constants.APOSTROPHY_DAV_URL.equals(mURL)) {
+            mURL = Constants.APOSTROPHY_DAV_URL + "/dav/calendars/user" + mUser + "/Default/";
         }
+
         url = new URL(mURL);
 
         this.mTrustAll = Boolean.valueOf(trustAll);
@@ -253,16 +256,16 @@ public class CaldavFacade {
     }
 
     private DiscoveryStrategy resolveDiscoveryStrategy() {
-    	for (DiscoveryStrategy ds : discoveryStrategies) {
-			if (ds.supportsTargetHost(targetHost)) {
-				return ds;
-			}
-		}
-    	return defaultDiscoveryStrategy;
-	}
+        for (DiscoveryStrategy ds : discoveryStrategies) {
+            if (ds.supportsTargetHost(targetHost)) {
+                return ds;
+            }
+        }
+        return defaultDiscoveryStrategy;
+    }
 
-	private static HttpReport createReportRequest(URI uri, String data, int depth) {
-		return discoveryStrategy.createReportRequest(uri, data, depth, targetHost);
+    private static HttpReport createReportRequest(URI uri, String data, int depth) {
+        return discoveryStrategy.createReportRequest(uri, data, depth, targetHost);
     }
 
     public static void fetchEvent_old(CalendarEvent calendarEvent)
@@ -324,7 +327,7 @@ public class CaldavFacade {
         HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
 
         SchemeRegistry registry = new SchemeRegistry();
-		registry.register(new Scheme("http", new PlainSocketFactory(), 80));
+        registry.register(new Scheme("http", new PlainSocketFactory(), 80));
         registry.register(new Scheme("https",
                 (mTrustAll ? EasySSLSocketFactory.getSocketFactory() : new TlsSniSocketFactory()), 443
         ));
@@ -450,7 +453,7 @@ public class CaldavFacade {
         parseXML(response, calendarHomeHandler);
         List<URI> result = calendarHomeHandler.calendarHomeSet;
         if (BuildConfig.DEBUG) Log.d(TAG, result.size() + " calendar-home-set found in "
-                    + userPrincipal.toString());
+                + userPrincipal.toString());
         return result;
     }
 
@@ -559,7 +562,7 @@ public class CaldavFacade {
 
         if (BuildConfig.DEBUG)
             Log.d(TAG, "HttpResponse status=" + response.getStatusLine()
-                + " body= " + body);
+                    + " body= " + body);
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -668,7 +671,7 @@ public class CaldavFacade {
     }
 
     private HttpPut createPutRequest(URI uri, String data, int depth) {
-    	return discoveryStrategy.createPutRequest(uri, data, depth, targetHost);
+        return discoveryStrategy.createPutRequest(uri, data, depth, targetHost);
     }
 
     /**
@@ -700,7 +703,7 @@ public class CaldavFacade {
                 Log.w(TAG, "Unkown StatusCode during creation of an event");
             }
         } catch (ClientProtocolException e) {
-            Log.e(getLastETag(),e.getMessage());
+            Log.e(getLastETag(), e.getMessage());
         } catch (IOException e) {
             Log.e(getLastETag(), e.getMessage());
         } catch (AuthenticationException e) {
@@ -762,16 +765,16 @@ public class CaldavFacade {
                 Log.w(TAG, "Unkown StatusCode during deletion of an event");
             }
         } catch (ClientProtocolException e) {
-            Log.e(getLastETag(),e.getMessage());
+            Log.e(getLastETag(), e.getMessage());
         } catch (IOException e) {
             if (lastStatusCode == 404) {
                 //the event has already been deleted on server side. no action needed
                 lcResult = true;
             } else {
-                Log.e(getLastETag(),e.getMessage());
+                Log.e(getLastETag(), e.getMessage());
             }
         } catch (AuthenticationException e) {
-            Log.e(getLastETag(),e.getMessage());
+            Log.e(getLastETag(), e.getMessage());
         }
 
         return lcResult;

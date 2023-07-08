@@ -47,4 +47,6 @@
     <string name="save_label">Αποθήκευση</string>
     <string name="today_label">Σήμερα</string>
     <string name="location">Τοποθεσία</string>
+    <string name="custom_server_label">Διακομιστής (προαιρετικός)</string>
+    <string name="login_btn_label">> Σύνδεση</string>
 </resources>

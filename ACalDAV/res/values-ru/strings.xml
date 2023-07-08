@@ -47,4 +47,6 @@
     <string name="save_label">Сохранить</string>
     <string name="today_label">Сегодня</string>
     <string name="location">Местоположение</string>
+    <string name="custom_server_label">Сервер (необязательно)</string>
+    <string name="login_btn_label">> Вход в систему</string>
 </resources>

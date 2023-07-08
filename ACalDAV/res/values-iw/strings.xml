@@ -37,4 +37,6 @@
     <string name="today_label">היום</string>
     <string name="location">מקום</string>
     <string name="no_title">(ללא כותרת)</string>
+    <string name="custom_server_label">שרת (אופציונלי)</string>
+    <string name="login_btn_label">> התחבר</string>
 </resources>

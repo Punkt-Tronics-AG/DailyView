@@ -36,6 +36,7 @@ import com.android.common.IListItemClick;
 import com.android.common.LoginActivity;
 import com.android.common.MenuItem;
 import com.android.common.MyDecoration;
+import com.aphy.caldavsyncadapter.Constants;
 import com.aphy.caldavsyncadapter.android.entities.AccountName;
 import com.aphy.caldavsyncadapter.caldav.entities.CalendarEvent;
 import com.aphy.caldavsyncadapter.caldav.entities.CalendarList;
@@ -43,6 +44,7 @@ import com.aphy.caldavsyncadapter.caldav.entities.DavCalendar;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.conn.HttpHostConnectException;
+
 import com.aphy.caldavsyncadapter.android.entities.CalendarEventData;
 import com.aphy.caldavsyncadapter.caldav.CaldavFacade;
 import com.aphy.caldavsyncadapter.caldav.CaldavFacade.TestConnectionResult;
@@ -99,7 +101,7 @@ public class AuthenticatorActivity extends Activity {
 
     private Context mContext;
 
-    private String mURL;
+    private String mURL = "";
 
     private List<CalendarEventData> mCalendarEventDataList;
     private List<CalendarEventData> mCalendarEventDataListFromDataBase;
@@ -126,7 +128,10 @@ public class AuthenticatorActivity extends Activity {
     private AccountName mSyncAccountName;
 
     private boolean isSyncNow = false;
+    private boolean isLoginView = true;
     private long mRespondTime;
+
+    private Toast toastsync = null;
 
     public AuthenticatorActivity() {
         super();
@@ -142,7 +147,7 @@ public class AuthenticatorActivity extends Activity {
         mTextSwitcher = findViewById(R.id.textSwitcher);
         mTextSwitcher.setFactory(mFactory);
         isSyncNow = false;
-        initList();
+//        initList();
         MenuItem.init(this);
         myAdaptor = new MyAdaptor();
         myAdaptor.setIListItemClick(iListItemClickListener);
@@ -161,21 +166,21 @@ public class AuthenticatorActivity extends Activity {
         getAccountInfo();
 
         if (mSyncAccountName != null && !"".equals(mSyncAccountName.getAccountName()) && !"".equals(mSyncAccountName.getPassword())) {
+            initList();
             mUser = mSyncAccountName.getAccountName();
             mPassword = mSyncAccountName.getPassword();
+            mURL = mSyncAccountName.getServerURL();
             mRecyclerViewList.set(0, getString(R.string.logout_label));
             mRecyclerViewList.set(1, getString(R.string.sync_calendar));
             mTextSwitcher.setText(mRecyclerViewList.get(0));
             mCalendarEventDataListFromDataBase = userDBHelper.queryCal(
                     "DtStart between " + TimeUtil.getTodayStamp() + " and " + TimeUtil.getFourDaysStamp() + " order by DtStart asc");
+            isLoginView = false;
             if (mCalendarEventDataListFromDataBase != null) {
                 updateCalendarList();
             }
-        } else {
-            mRecyclerViewList.set(0, getString(R.string.email_label));
-            mRecyclerViewList.set(1, getString(R.string.password_label));
-            mTextSwitcher.setText(mRecyclerViewList.get(0));
-        }
+        } else
+            initLoginItems();
     }
 
     private void getAccountInfo() {
@@ -185,6 +190,7 @@ public class AuthenticatorActivity extends Activity {
                 mSyncAccountName = new AccountName();
                 mSyncAccountName.setAccountName(accountNameList.get(i).getAccountName());
                 mSyncAccountName.setPassword(accountNameList.get(i).getPassword());
+                mSyncAccountName.setServerURL(accountNameList.get(i).getServerURL());
             }
         }
     }
@@ -214,6 +220,8 @@ public class AuthenticatorActivity extends Activity {
     }
 
     private void initList() {
+        mRecyclerViewList.add("");
+        mRecyclerViewList.add("");
         mRecyclerViewList.add("");
         mRecyclerViewList.add("");
     }
@@ -382,7 +390,7 @@ public class AuthenticatorActivity extends Activity {
 
                 mSparseArray.put(position, holder);
 
-                if (!mDataInited && position == 2) {
+                if (!mDataInited && position == 0) {
                     mHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -393,7 +401,7 @@ public class AuthenticatorActivity extends Activity {
                             if (mLastPosition != mCurrentIndex) {
                                 mLastPosition = mCurrentIndex;
                             }
-                            mTextSwitcher.setText(mRecyclerViewList.get(2));
+                            mTextSwitcher.setText(mRecyclerViewList.get(0));
                         }
                     }, 100);
                 }
@@ -419,24 +427,26 @@ public class AuthenticatorActivity extends Activity {
     private IListItemClick iListItemClickListener = new IListItemClick() {
         @Override
         public void itemClick(View view, int position) {
-            String indexStr = mRecyclerViewList.get(position);
-            if (isEmailPosition(position) || isPasswordPosition(position)) {
+            String itemStr = getSelectedItemLabel(position);
+
+            if (isLoginView && !getString(R.string.login_btn_label).equals(itemStr)) {
                 Log.i(TAG, "isSyncNow = " + isSyncNow);
                 if (!isSyncNow) {
                     Intent intent = new Intent();
                     intent.setClass(AuthenticatorActivity.this, LoginActivity.class);
                     intent.putExtra("position", position);
-                    intent.putExtra("name", indexStr);
+                    intent.putExtra("name", itemStr);
+
                     if (mSyncAccountName == null) getAccountInfo();
                     if (mSyncAccountName != null) {
-                        intent.putExtra("value", position == 0 ? mSyncAccountName.getAccountName() : mSyncAccountName.getPassword());
+                        intent.putExtra("value", getSelectedItemValue(position));
                     }
                     mCurrentIndexStopped = mCurrentIndex;
                     startActivityForResult(intent, 0);
                 }
-            } else if (getString(R.string.logout_label).equals(indexStr)) {
+            } else if (getString(R.string.logout_label).equals(itemStr)) {
                 logout();
-            } else if (getString(R.string.sync_calendar).equals(indexStr)) {
+            } else if (getString(R.string.sync_calendar).equals(itemStr) || getString(R.string.login_btn_label).equals(itemStr)) {
                 attemptLogin();
             } else {
                 String datestamp = mDateStampList.get(position - 2);
@@ -464,32 +474,89 @@ public class AuthenticatorActivity extends Activity {
         }
     };
 
-    private boolean isEmailPosition(int position) {
-        String indexStr = mRecyclerViewList.get(position);
-        return (position == 0 && !getString(R.string.logout_label).equals(indexStr));
+
+    private String getSelectedItemLabel(int position) {
+        return mRecyclerViewList.get(position);
     }
 
-    private boolean isPasswordPosition(int position) {
-        String indexStr = mRecyclerViewList.get(position);
-        return (position == 1 && !getString(R.string.sync_calendar).equals(indexStr));
+    private String getSelectedItemValue(int position) {
+        String item = getSelectedItemLabel(position);
+        if (getString(R.string.email_label).equals(item)) {
+            return mSyncAccountName.getAccountName();
+        } else if (getString(R.string.password_label).equals(item)) {
+            return mSyncAccountName.getPassword();
+        } else if (getString(R.string.custom_server_label).equals(item)) {
+            return mSyncAccountName.getServerURL();
+        }
+
+        return "";
     }
+
+    // TODO: Improve login form validation
+    private boolean validateForm() {
+
+        return true;
+
+//        String errorText = "";
+//
+//        if (mURL.equals("")) {
+//            if (mUser.equals("")) {
+//                errorText = getString(R.string.error_invalid_email);
+//            } else if (mPassword.equals("")) {
+//                errorText = getString(R.string.error_invalid_password);
+//            } else {
+//                return true;
+//            }
+//        } else {
+//            return true;
+//        }
+//
+//        toastsync = Toast
+//                .makeText(getApplicationContext(), errorText, Toast.LENGTH_SHORT);
+//        toastsync.show();
+//
+//        return false;
+
+    }
+
+    private void initLoginItems() {
+        mRecyclerViewList.clear();
+
+        if (!Constants.DEBUG) {
+            mRecyclerViewList.add(getString(R.string.email_label));
+            mRecyclerViewList.add(getString(R.string.password_label));
+            mRecyclerViewList.add(getString(R.string.custom_server_label));
+            mURL = Constants.APOSTROPHY_DAV_URL;
+        } else {
+            mRecyclerViewList.add(0, Constants.DEBUG_USER);
+            mRecyclerViewList.add(1, Constants.DEBUG_PASSWORD);
+            mRecyclerViewList.add(2, Constants.DEBUG_SERVER);
+            mUser = Constants.DEBUG_USER;
+            mPassword = Constants.DEBUG_PASSWORD;
+            mURL = Constants.DEBUG_SERVER;
+        }
+
+        mRecyclerViewList.add(getString(R.string.login_btn_label));
+        mTextSwitcher.setText(mRecyclerViewList.get(0));
+
+    }
+
 
     private void logout() {
         Log.d(TAG, "logout");
         mUser = "";
         mPassword = "";
+        mURL = "";
         if (mSyncAccountName != null) {
             mSyncAccountName.clearAccountInfo();
         }
         userDBHelper.deleteAll(UserDBHelper.TABLE_NAME_ACCOUNT);
-        mRecyclerViewList.clear();
-        mRecyclerViewList.add(getString(R.string.email_label));
-        mRecyclerViewList.add(getString(R.string.password_label));
-        mTextSwitcher.setText(mRecyclerViewList.get(0));
+        initLoginItems();
         myAdaptor.notifyDataSetChanged();
         mCurrentIndex = 0;
         mLastPosition = 0;
         mCurrentIndexStopped = 0;
+        isLoginView = true;
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -499,6 +566,7 @@ public class AuthenticatorActivity extends Activity {
         if (data != null && resultCode == 0) {
             String value = data.getExtras().getString("Save");
             String name = data.getExtras().getString("Name");
+
             if (getString(R.string.email_label).equals(name)) {
                 mUser = value;
                 if (!"".equals(value)) {
@@ -518,10 +586,17 @@ public class AuthenticatorActivity extends Activity {
                     myAdaptor.notifyDataSetChanged();
                 }
             }
-            mTextSwitcher.setText(value);
-            if (!"".equals(mUser) && !"".equals(mPassword)) {
-                attemptLogin();
+
+            if (getString(R.string.custom_server_label).equals(name)) {
+                mURL = value;
+                if (!"".equals(value)) {
+                    mRecyclerViewList.set(2, value);
+                    myAdaptor.notifyDataSetChanged();
+                }
             }
+
+
+            mTextSwitcher.setText(value);
         }
     }
 
@@ -538,6 +613,7 @@ public class AuthenticatorActivity extends Activity {
         myAdaptor.notifyDataSetChanged();
         mCurrentIndex = 0;
         mLastPosition = 0;
+        isLoginView = false;
         updateCalendarList();
     }
 
@@ -565,9 +641,11 @@ public class AuthenticatorActivity extends Activity {
             return;
         }
 
-        Log.i(TAG, "attemptLogin");
+        if (!validateForm()) {
+            return;
+        }
 
-        mURL = "https://dav.aphy.app";
+        Log.i(TAG, "attemptLogin");
 
         boolean cancel = false;
         View focusView = null;
@@ -603,7 +681,6 @@ public class AuthenticatorActivity extends Activity {
      */
     public class UserLoginTask extends AsyncTask<Void, Void, LoginResult> {
         private Activity activity;
-        private Toast toastsync = null;
 
         @Override
         protected LoginResult doInBackground(Void... params) {
@@ -664,6 +741,8 @@ public class AuthenticatorActivity extends Activity {
                     AccountName accountName = new AccountName();
                     accountName.setAccountName(mUser);
                     accountName.setPassword(mPassword);
+                    accountName.setServerURL(mURL);
+
                     userDBHelper.insertAccount(accountName);
 
                     result = TestConnectionResult.SUCCESS;
@@ -684,7 +763,7 @@ public class AuthenticatorActivity extends Activity {
                     e.printStackTrace();
                     Log.w(TAG, "CaldavProtocolException = " + e);
                     result = TestConnectionResult.WRONG_ANSWER;
-                }  catch (FileNotFoundException e) {
+                } catch (FileNotFoundException e) {
                     e.printStackTrace();
                     Log.w(TAG, "FileNotFoundException = " + e);
                     result = TestConnectionResult.WRONG_URL;
@@ -706,11 +785,11 @@ public class AuthenticatorActivity extends Activity {
                 e.printStackTrace();
                 Log.w(TAG, "ParserConfigurationException = " + e);
                 return LoginResult.UnkonwnException;
-            }  catch (UnknownHostException e) {
+            } catch (UnknownHostException e) {
                 e.printStackTrace();
                 Log.w(TAG, "UnknownHostException = " + e);
                 return LoginResult.UnknownHostException;
-            }  catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 Log.w(TAG, "IOException = " + e);
                 return LoginResult.UnkonwnException;
@@ -759,6 +838,7 @@ public class AuthenticatorActivity extends Activity {
             }
             int duration = Toast.LENGTH_LONG;
             Toast toast = null;
+
             Log.i(TAG, "result = " + result);
             switch (result) {
                 case Success_Calendar:
